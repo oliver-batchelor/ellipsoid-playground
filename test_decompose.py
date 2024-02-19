@@ -31,9 +31,19 @@ while True:
   r = radii_from_cov(cov)
   major, minor = cov_axes_kernel(cov)
 
-  print(r)
-  print(major, minor)
-  print(dir * scales[0], np.array([-dir[1], dir[0]]) * scales[1])
+  print("cov ", cov)
+
+  print("radius", r)
+  print("axes", major, minor)
+
+  v1 = dir * scales[0]
+  v2 = np.array([-dir[1], dir[0]]) * scales[1]
+
+  print(v1, v2)
+
+  # recompute covariance from axes
+  cov1 = np.array([v1, v2]).T @ np.array([v1, v2])
+  print("cov2", cov)
   
   plt.gca().set_aspect('equal')
 

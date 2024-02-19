@@ -1,1 +1,1 @@
-Random code snippets to do with ellipsoids and gaussian splatting. 
+Random code snippets and workings out to do with ellipsoids and gaussian splatting. 
