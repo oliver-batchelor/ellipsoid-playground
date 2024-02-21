@@ -8,7 +8,6 @@ dy = y - v
 inner =  (0.5 * (dx**2 * a + dy**2 * c) - dx * dy * b) 
 p = exp( -(inner ** B) )
 
-
 cse, derivs = sp.cse([sp.diff(p, i) for i in [u, v, a, b, c, B]] + [p],  optimizations='basic')
 
 print(dict(cse))
@@ -21,13 +20,16 @@ def rev_cse(expr):
 
 expanded = [rev_cse(deriv) for deriv in derivs]
 
-print(sp.simplify(expanded[-1]) == sp.simplify(p))
+def equal(a, b):
+  return sp.simplify(a - b) == 0
 
-du = -B*(0.5*a*(2*u - 2*x) + b*dy) * (inner ** B)  * p / inner
-dv = -B*(0.5*c*(2*v - 2*y) + b*dx) * (inner ** B)  * p / inner
+print(equal(expanded[-1], p))
 
-print(sp.diff(p, u) == du)
-print(sp.diff(p, v) == dv)
+du = -B*(a*(u - x) + b*dy) * (inner ** B)  * p / inner
+dv = -B*(c*(v - y) + b*dx) * (inner ** B)  * p / inner
+
+print(equal(sp.diff(p, u), du))
+print(equal(sp.diff(p, v), dv))
 
 da = -0.5*B * dx**2 * (inner ** B) * p / inner
 db = B * dx * dy * (inner ** B) * p / inner

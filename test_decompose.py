@@ -18,6 +18,8 @@ while True:
     d2 = np.array([-dir[1], dir[0]]) * scales[1]
 
     points = np.random.randn(1000, 2)
+
+
     return points @ np.array([d1, d2]) 
 
 
