@@ -17,22 +17,18 @@ def intensity_with_grad(u, m, v1, s1, s2):
   ty = d.dot(v2)
 
   def S(x, sigma=1):
-      """ Approximate gaussian cdf """
+      """ Approximate gaussian cdf and derivative """
       z = x / sigma
-      return 1 / (1 + sp.exp(-1.6 * z - 0.07 * z**3))
-  
-  def dS(sx, x, sigma=1):
-      """ Derivative of the approx gaussian cdf S at x """
-      return (1.6 + 0.21 * (x/sigma)**2) * sx * (1 - sx)
+      s = 1 / (1 + sp.exp(-1.6 * z - 0.07 * z**3))
+      ds = (1.6 + 0.21 * (x/sigma)**2) * s * (1 - s)
 
-  tx1, tx2 = tx + 0.5, tx - 0.5
-  ty1, ty2 = ty + 0.5, ty - 0.5
+      return s, ds
 
-  Sx1, Sx2 = S(tx1, s1), S(tx2, s1)
-  Sy1, Sy2 = S(ty1, s2), S(ty2, s2)
-    
-  dSx1, dSx2 =  dS(Sx1, tx1, s1), dS(Sx2, tx2, s1)
-  dSy1, dSy2 =  dS(Sy1, ty1, s2), dS(Sy2, ty2, s2)
+  Sx1, dSx1 = S(tx + 0.5, s1)
+  Sx2, dSx2 = S(tx - 0.5, s1)
+
+  Sy1, dSy1 = S(ty + 0.5, s2)
+  Sy2, dSy2 = S(ty - 0.5, s2)
 
   # forward pass, computation of intensity
   i1 = s1 * (Sx1 - Sx2)
@@ -44,8 +40,11 @@ def intensity_with_grad(u, m, v1, s1, s2):
   # backward pass, computation of gradients of intensity w.r.t. parameters
   di_dMean = tau * (i2  * (dSx1 - dSx2) * -v1  + i1 * (dSy1 - dSy2) * -v2)
 
-  di_s1 = tau * i2 * ((Sx1 - Sx2) +  (dSx1  * tx1 -  dSx2  * tx2) / -s1)
-  di_s2 = tau * i1 * ((Sy1 - Sy2) +  (dSy1  * ty1 -  dSy2  * ty2) / -s2)
+  di_s1 = tau * i2 * (Sx1 - Sx2
+                  +  (dSx1  * -(tx + 0.5) -  dSx2  * -(tx - 0.5)) / s1)
+  
+  di_s2 = tau * i1 * (Sy1 - Sy2 
+                  +  (dSy1  * -(ty + 0.5) -  dSy2  * -(ty - 0.5)) / s2)
 
   di_dv1 = tau * (i2 * (dSx1 - dSx2) * d          # gradient on first eigenvector (v1)
                +  i1 * (dSy1 - dSy2) * -perp(d))  # gradient on second eigenvector (v2 = perp(v1))
