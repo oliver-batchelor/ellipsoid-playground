@@ -57,7 +57,6 @@ def dS_dsigma(x, sigma=1):
                                 
 x, s = sp.symbols('x s')
 num_equal("S_pixel_x", sp.diff(S_pixel(x, s), x),  dS_dx(x + 0.5, s) - dS_dx(x - 0.5, s))
-
 num_equal("S_pixel_sigma", sp.diff(S_pixel(x, s), s),  dS_dsigma(x + 0.5, s) - dS_dsigma(x - 0.5, s))
 
 
@@ -89,3 +88,6 @@ di_dv1 = 2 * pi * (i2 * s1  * (dS_dx(tx + 0.5, s1) - dS_dx(tx - 0.5, s1)) * d   
 
 
 multi_num_equal("i2d_v1", (sp.diff(i2d, vx), sp.diff(i2d, vy)), di_dv1)
+
+
+
