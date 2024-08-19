@@ -38,13 +38,16 @@ def intensity_with_grad(u, m, v1, s1, s2):
   i_2d = tau * i1 * i2
 
   # backward pass, computation of gradients of intensity w.r.t. parameters
-  di_dMean = tau * (i2  * s1 * (dSx1 - dSx2) * -v1  + i1 * s2 * (dSy1 - dSy2) * -v2)
+  dSx = i2  * s1 * (dSx1 - dSx2)
+  dSy = i1  * s2 * (dSy1 - dSy2)
+
+  di_dMean = tau * (dSx * -v1  + dSy * -v2)
 
   di_s1 = tau * i2 * (Sx1 - Sx2 +  (dSx1_sig -  dSx2_sig) * s1)
   di_s2 = tau * i1 * (Sy1 - Sy2 +  (dSy1_sig -  dSy2_sig) * s2)
 
-  di_dv1 = tau * (i2 * s1 * (dSx1 - dSx2) * d          # gradient on first eigenvector (v1)
-               +  i1 * s2 * (dSy1 - dSy2) * -perp(d))  # gradient on second eigenvector (v2 = perp(v1))
+  di_dv1 = tau * (dSx * d          # gradient on first eigenvector (v1)
+               +  dSy * -perp(d))  # gradient on second eigenvector (v2 = perp(v1))
 
 
   return i_2d, di_dMean, di_s1, di_s2, di_dv1
