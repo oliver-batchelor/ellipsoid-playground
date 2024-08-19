@@ -1,10 +1,13 @@
-import sympy as sp
-from sympy import exp, log, pi, sympify
-import numpy as np
-mx, my, ux, uy, vx, vy = sp.symbols('mx my ux uy vx vy')
+import symengine as sp
+from symengine import exp, log, pi, sympify
+
+
+from util import num_equal
+
+mx, my, ux, uy, vx, vy = sp.symbols('mx my ux uy vx vy', real=True)
 
 # s1, s2 = sp.symbols('s1 s2', positive=True)
-s1, s2 = sp.symbols('s1 s2', positive=True)
+s1, s2 = sp.symbols('s1 s2', positive=True, real=True)
 
 v1 = sp.Matrix([vx, vy]) # direction vector, first eignevector of the covariance matrix
 v2 = sp.Matrix([-vy, vx]) # second eigenvector
@@ -36,10 +39,9 @@ p = 2 * sp.pi * i1 * i2
 
 
 
-
 vars = dict(vx=vx, vy=vy, mx=mx, my=my, s1=s1, s2=s2)
 
-cse, derivs = sp.cse([sp.diff(p, i) for i in vars.values()] + [p],  optimizations='basic')
+cse, derivs = sp.cse([sp.diff(p, i) for i in vars.values()] + [p])
 derivs = {k:v for k, v in zip(vars.keys(), derivs)}
 
 def rev_cse(expr):
@@ -126,7 +128,7 @@ derived = dict(
    
 
 def equal(a, b):
-  return sp.nsimplify(a - b, rational=True) == 0
+  return num_equal(a, b)
 
 for k, deriv in derivs.items():
-    print(k, equal(derivs[k], derived[k]))
+    print(k, equal(expanded[k], derived[k]))
