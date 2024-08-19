@@ -31,30 +31,24 @@ def intensity_with_grad(u, m, v1, s1, s2):
   Sx1, Sx2 = S(tx1, s1), S(tx2, s1)
   Sy1, Sy2 = S(ty1, s2), S(ty2, s2)
     
-  Sx = Sx1 - Sx2
-  Sy = Sy1 - Sy2
-
   dSx1, dSx2 =  dS(Sx1, tx1, s1), dS(Sx2, tx2, s1)
   dSy1, dSy2 =  dS(Sy1, ty1, s2), dS(Sy2, ty2, s2)
 
-  dSx = dSx1 - dSx2
-  dSy = dSy1 - dSy2
-
   # forward pass, computation of intensity
-  i1 = s1 * Sx
-  i2 = s2 * Sy
+  i1 = s1 * (Sx1 - Sx2)
+  i2 = s2 * (Sy1 - Sy2)
 
   tau = 2 * sp.pi
   i_2d = tau * i1 * i2
 
   # backward pass, computation of gradients of intensity w.r.t. parameters
-  di_dMean = tau * (i2  * dSx * -v1  + i1 * dSy * -v2)
+  di_dMean = tau * (i2  * (dSx1 - dSx2) * -v1  + i1 * (dSy1 - dSy2) * -v2)
 
-  di_s1 = tau * i2 * ( Sx +  (dSx1  * tx1 -  dSx2  * tx2) / -s1)
-  di_s2 = tau * i1 * ( Sy +  (dSy1  * ty1 -  dSy2  * ty2) / -s2)
+  di_s1 = tau * i2 * ((Sx1 - Sx2) +  (dSx1  * tx1 -  dSx2  * tx2) / -s1)
+  di_s2 = tau * i1 * ((Sy1 - Sy2) +  (dSy1  * ty1 -  dSy2  * ty2) / -s2)
 
-  di_dv1 = tau * (i2 * dSx * d          # gradient on first eigenvector (v1)
-               +  i1 * dSy * -perp(d))  # gradient on second eigenvector (v2 = perp(v1))
+  di_dv1 = tau * (i2 * (dSx1 - dSx2) * d          # gradient on first eigenvector (v1)
+               +  i1 * (dSy1 - dSy2) * -perp(d))  # gradient on second eigenvector (v2 = perp(v1))
 
 
   return i_2d, di_dMean, di_s1, di_s2, di_dv1
