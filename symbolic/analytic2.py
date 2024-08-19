@@ -9,47 +9,49 @@ def perp(v):
 def intensity_with_grad(u, m, v1, s1, s2):
 
   v2 = perp(v1) # second eigenvector
+  d = u - m # relative position of pixel centre to gaussian mean
 
   # local coordinate of pixel centre in gaussian coordinate system
   # \tilde{u} in paper (tx, ty)
-  d = u - m
-
   tx = d.dot(v1)
   ty = d.dot(v2)
-
 
   def S(x, sigma=1):
       """ Approximate gaussian cdf """
       z = x / sigma
       return 1 / (1 + sp.exp(-1.6 * z - 0.07 * z**3))
+  
+  def dS(sx, x, sigma=1):
+      """ Derivative of the approx gaussian cdf S at x """
+      return (1.6 + 0.21 * (x/sigma)**2) * sx * (1 - sx)
 
+  tx1, tx2 = tx + 0.5, tx - 0.5
+  ty1, ty2 = ty + 0.5, ty - 0.5
 
-  Sx1, Sx2 = S(tx + 0.5, s1), S(tx - 0.5, s1)
-  Sy1, Sy2 = S(ty + 0.5, s2), S(ty - 0.5, s2)
+  Sx1, Sx2 = S(tx1, s1), S(tx2, s1)
+  Sy1, Sy2 = S(ty1, s2), S(ty2, s2)
     
   Sx = Sx1 - Sx2
   Sy = Sy1 - Sy2
 
+  dSx1, dSx2 =  dS(Sx1, tx1, s1), dS(Sx2, tx2, s1)
+  dSy1, dSy2 =  dS(Sy1, ty1, s2), dS(Sy2, ty2, s2)
+
+  dSx = dSx1 - dSx2
+  dSy = dSy1 - dSy2
+
+  # forward pass, computation of intensity
   i1 = s1 * Sx
   i2 = s2 * Sy
 
   tau = 2 * sp.pi
   i_2d = tau * i1 * i2
 
-
-  def dS(sx, x, sigma=1):
-      """ Derivative of the approx gaussian cdf S at x """
-      return (1.6 + 0.21 * (x/sigma)**2) * sx * (1 - sx)
-  
-
-  dSx =  dS(Sx1, tx, s1) - dS(Sx2, tx, s1)
-  dSy = dS(Sy1, ty, s2) - dS(Sy2, ty, s2)
-
-                            
+  # backward pass, computation of gradients of intensity w.r.t. parameters
   di_dMean = tau * (i2  * dSx * -v1  + i1 * dSy * -v2)
 
-  di_s1 = tau * i2 * ( Sx + dSx * -tx / s1)
-  di_s2 = tau * i1 * ( Sy + dSy * -ty / s2)
+  di_s1 = tau * i2 * ( Sx +  (dSx1  * tx1 -  dSx2  * tx2) / -s1)
+  di_s2 = tau * i1 * ( Sy +  (dSy1  * ty1 -  dSy2  * ty2) / -s2)
 
   di_dv1 = tau * (i2 * dSx * d          # gradient on first eigenvector (v1)
                +  i1 * dSy * -perp(d))  # gradient on second eigenvector (v2 = perp(v1))
@@ -69,9 +71,15 @@ def parameters():
 
   return u, m, v1, s1, s2
 
-u, m, v1, s1, s2 = parameters()
 
-i_2d, di_dMean, di_s1, di_s2, di_dv1 = intensity_with_grad(u, m, v1, s1, s2)
+if __name__ == "__main__":
+  u, m, v1, s1, s2 = parameters()
+  i_2d, di_dMean, di_s1, di_s2, di_dv1 = intensity_with_grad(u, m, v1, s1, s2)
 
 
-multi_num_equal("di_dMean", (sp.diff(i_2d, m[0]), sp.diff(i_2d, m[1])), di_dMean)
+  multi_num_equal("di_dMean", (sp.diff(i_2d, m[0]), sp.diff(i_2d, m[1])), di_dMean)
+  num_equal("di_s1", sp.diff(i_2d, s1), di_s1)
+  num_equal("di_s2", sp.diff(i_2d, s2), di_s2)
+
+  multi_num_equal("di_dv1", (sp.diff(i_2d, v1[0]), sp.diff(i_2d, v1[1])), di_dv1)
+

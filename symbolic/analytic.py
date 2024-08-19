@@ -1,24 +1,20 @@
 import symengine as sp
 from symengine import exp, log, pi, sympify
 
+from analytic2 import parameters
 from util import multi_num_equal, num_equal
 
-mx, my, ux, uy, vx, vy = sp.symbols('mx my ux uy vx vy', real=True)
-
-# s1, s2 = sp.symbols('s1 s2', positive=True)
-s1, s2 = sp.symbols('s1 s2', positive=True, real=True)
+u, m, v1, s1, s2 = parameters()
+# i_2d, di_dMean, di_s1, di_s2, di_dv1 = intensity_with_grad(u, m, v1, s1, s2)
 
 def perp(v):
     return sp.Matrix([-v[1], v[0]])
 
-v1 = sp.Matrix([vx, vy]) # direction vector, first eignevector of the covariance matrix
+# v1 direction vector, first eignevector of the covariance matrix
 v2 = perp(v1) # second eigenvector
-
-# v2 = sp.Matrix([-vy, vx]) # second eigenvector
           
-u = sp.Matrix([ux, uy]) # pixel centre `u`` in paper
-m = sp.Matrix([mx, my]) # gaussian mean - \hat{u} in paper
-
+# u: pixel centre `u`` in paper
+# m: gaussian mean, \hat{u} in paper
 
 # local coordinate of pixel centre in gaussian coordinate system
 # \tilde{u} in paper (tx, ty)
@@ -61,14 +57,14 @@ num_equal("S_pixel_sigma", sp.diff(S_pixel(x, s), s),  dS_dsigma(x + 0.5, s) - d
 
 
 di_dMean = (dS_dx(tx + 0.5, s1) - dS_dx(tx - 0.5, s1)) * s1 *  -v1
-multi_num_equal("i1_m", (sp.diff(i1, mx), sp.diff(i1, my)), di_dMean)
+multi_num_equal("i1_m", (sp.diff(i1, m[0]), sp.diff(i1, m[1])), di_dMean)
 
 
 di_dMean = 2 * pi * (i2  * ((dS_dx(tx + 0.5, s1) - dS_dx(tx - 0.5, s1)) * s1 * -v1)
                     + i1 * ((dS_dx(ty + 0.5, s2) - dS_dx(ty - 0.5, s2)) * s2 * -v2))
 
 
-multi_num_equal("di_dMean", (sp.diff(i2d, mx), sp.diff(i2d, my)), di_dMean)
+multi_num_equal("di_dMean", (sp.diff(i2d, m[0]), sp.diff(i2d, m[1])), di_dMean)
 
 
 di_s1 = 2 * pi * i2 * ( S_pixel(tx, s1)
@@ -87,7 +83,5 @@ di_dv1 = 2 * pi * (i2 * s1  * (dS_dx(tx + 0.5, s1) - dS_dx(tx - 0.5, s1)) * d   
                 +  i1 * s2  * (dS_dx(ty + 0.5, s2) - dS_dx(ty - 0.5, s2)) * -perp(d))  # gradient on second eigenvector (v2 = perp(v1))
 
 
-multi_num_equal("i2d_v1", (sp.diff(i2d, vx), sp.diff(i2d, vy)), di_dv1)
-
-
+multi_num_equal("i2d_v1", (sp.diff(i2d, v1[0]), sp.diff(i2d, v1[1])), di_dv1)
 
