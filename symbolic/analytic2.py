@@ -24,7 +24,7 @@ def intensity_with_grad(u, m, v1, s1, s2):
 
       return s, ds / sigma, ds * -x/(sigma ** 2) 
 
-  # S and derivatives at relevant tx, ty
+  # evaluate S and derivatives at relevant tx, ty
   Sx1, dSx1, dSx1_sig = S(tx + 0.5, s1)
   Sx2, dSx2, dSx2_sig = S(tx - 0.5, s1)
 

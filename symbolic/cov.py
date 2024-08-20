@@ -23,6 +23,7 @@ cse, derivs = sp.cse([sp.diff(p, i) for i in [u, v, a, b, c]] + [p],  optimizati
 print(dict(cse))
 
 
+
 def equal(a, b):
   return sp.simplify(a - b) == 0
 
