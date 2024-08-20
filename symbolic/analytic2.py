@@ -16,22 +16,21 @@ def intensity_with_grad(u, m, v1, s1, s2):
   tx = d.dot(v1)
   ty = d.dot(v2)
 
-  def S(x, sigma=1):
+  def S_sig(x, sigma=1):
       """ Approximate gaussian cdf and derivatives dS/dx, dS/dsigma """
       z = x / sigma
       s = 1 / (1 + sp.exp(-1.6 * z - 0.07 * z**3))
       
-      ds = (1.6 + 0.21 * z**2) * s * (1 - s)
-      ds_dx = ds / sigma
+      ds_dx = (1.6 + 0.21 * z**2) * s * (1 - s)
+      dSig_dx = ds_dx / sigma
 
-      return s, ds_dx, ds_dx * -z
+      return s, dSig_dx, dSig_dx * -z
 
-  # evaluate S and derivatives at relevant tx, ty
-  Sx1, dSx1, dSx1_sig = S(tx + 0.5, s1)
-  Sx2, dSx2, dSx2_sig = S(tx - 0.5, s1)
+  Sx1, dSx1, dSx1_sig = S_sig(tx + 0.5, s1)
+  Sx2, dSx2, dSx2_sig = S_sig(tx - 0.5, s1)
 
-  Sy1, dSy1, dSy1_sig = S(ty + 0.5, s2)
-  Sy2, dSy2, dSy2_sig = S(ty - 0.5, s2)
+  Sy1, dSy1, dSy1_sig = S_sig(ty + 0.5, s2)
+  Sy2, dSy2, dSy2_sig = S_sig(ty - 0.5, s2)
 
   # forward pass, computation of intensity
   i1 = s1 * (Sx1 - Sx2)
@@ -40,11 +39,10 @@ def intensity_with_grad(u, m, v1, s1, s2):
   tau = 2 * sp.pi
   i_2d = tau * i1 * i2
 
-  # common terms
+  # backward pass, computation of gradients of intensity w.r.t. parameters
   dSx = i2  * s1 * (dSx1 - dSx2)
   dSy = i1  * s2 * (dSy1 - dSy2)
 
-  # backward pass, computation of gradients of intensity w.r.t. parameters
   di_dMean = tau * (dSx * -v1  + dSy * -v2)
 
   di_s1 = tau * i2 * (Sx1 - Sx2 +  (dSx1_sig -  dSx2_sig) * s1)
