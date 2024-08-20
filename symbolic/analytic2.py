@@ -24,6 +24,7 @@ def intensity_with_grad(u, m, v1, s1, s2):
 
       return s, ds / sigma, ds * -x/(sigma ** 2) 
 
+  # S and derivatives at relevant tx, ty
   Sx1, dSx1, dSx1_sig = S(tx + 0.5, s1)
   Sx2, dSx2, dSx2_sig = S(tx - 0.5, s1)
 
@@ -37,10 +38,11 @@ def intensity_with_grad(u, m, v1, s1, s2):
   tau = 2 * sp.pi
   i_2d = tau * i1 * i2
 
-  # backward pass, computation of gradients of intensity w.r.t. parameters
+  # common terms
   dSx = i2  * s1 * (dSx1 - dSx2)
   dSy = i1  * s2 * (dSy1 - dSy2)
 
+  # backward pass, computation of gradients of intensity w.r.t. parameters
   di_dMean = tau * (dSx * -v1  + dSy * -v2)
 
   di_s1 = tau * i2 * (Sx1 - Sx2 +  (dSx1_sig -  dSx2_sig) * s1)
