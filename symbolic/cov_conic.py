@@ -1,6 +1,7 @@
 import sympy as sp
 from sympy import exp
-x, y, u, v, a, b, c, p = sp.symbols('x y u v a b c p')
+
+x, y, u, v, a, b, c = sp.symbols('x y u v a b c')
 
 
 dx = x - u

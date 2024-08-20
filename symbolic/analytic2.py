@@ -20,9 +20,11 @@ def intensity_with_grad(u, m, v1, s1, s2):
       """ Approximate gaussian cdf and derivatives dS/dx, dS/dsigma """
       z = x / sigma
       s = 1 / (1 + sp.exp(-1.6 * z - 0.07 * z**3))
-      ds = (1.6 + 0.21 * (x/sigma)**2) * s * (1 - s)
+      
+      ds = (1.6 + 0.21 * z**2) * s * (1 - s)
+      ds_dx = ds / sigma
 
-      return s, ds / sigma, ds * -x/(sigma ** 2) 
+      return s, ds_dx, ds_dx * -z
 
   # evaluate S and derivatives at relevant tx, ty
   Sx1, dSx1, dSx1_sig = S(tx + 0.5, s1)
