@@ -6,6 +6,28 @@ def perp(v):
     return sp.Matrix([-v[1], v[0]])
 
 
+def intensity(u, m, v1, s1, s2):
+
+  v2 = perp(v1) # second eigenvector
+  d = u - m # relative position of pixel centre to gaussian mean
+
+  # local coordinate of pixel centre in gaussian coordinate system
+  # \tilde{u} in paper (tx, ty)
+  tx = d.dot(v1)
+  ty = d.dot(v2)
+
+  def S_sig(x, sigma=1):
+      """ Approximate gaussian cdf and derivatives dS/dx, dS/dsigma """
+      z = x / sigma
+      return 1 / (1 + sp.exp(-1.6 * z - 0.07 * z**3))
+  
+  Sx1, Sx2 = S_sig(tx + 0.5, s1), S_sig(tx - 0.5, s1)
+  Sy1, Sy2 = S_sig(ty + 0.5, s2), S_sig(ty - 0.5, s2)
+
+  # forward pass, computation of intensity
+  return 2 * sp.pi * s1 * (Sx1 - Sx2) * s2 * (Sy1 - Sy2)
+
+
 def intensity_with_grad(u, m, v1, s1, s2):
 
   v2 = perp(v1) # second eigenvector
