@@ -88,7 +88,7 @@ def eig_2d(basis):
 
   v2 = np.array([-v1[1], v1[0]])
 
-  return lambda1, lambda2, v1, v2
+  return (np.sqrt(lambda1), np.sqrt(lambda2)), v1, v2
 
 
 
@@ -103,9 +103,17 @@ def eig_grid(grid, centre, v1, scales):
 
 
 
+def ellipse_bounds(uv, v1, v2, scales):
+  r1, r2 = scales
+
+  extent  = np.sqrt((v1 * r1)**2 +(v2 * r2)**2)
+  return (uv - extent), (uv + extent)
+  
+
+
 def cov_grid(grid, cov, centre):
-  lambda1, lambda2, v1, v2 = eig_2d(cov)
-  return eig_grid(grid, centre, v1, (np.sqrt(lambda1), np.sqrt(lambda2)))
+  sigmas, v1, v2 = eig_2d(cov)
+  return eig_grid(grid, centre, v1, sigmas)
 
 
 
@@ -140,12 +148,17 @@ def draw_grid(opacity, centre, scales, v1, gaussian_scale=2.0):
 
     # draw infinite line which intersects c1 and c2
     slope = (c2[1] - c1[1]) / (c2[0] - c1[0])
-    plt.axline(c1, slope=slope, color="k", linestyle=(0, (5, 5)))
+    plt.axline(c1, slope=slope, color="k", linestyle=(0, (5, 5)), linewidth=1)
 
 
   # draw ellipse use matplotlib.patches.Ellipse
   plt.gca().add_patch(patches.Ellipse(centre, 2 * scales[0] * gaussian_scale, 2 * scales[1] * gaussian_scale, 
-                                      angle=np.arctan2(v1[1], v1[0]) * 180 / np.pi, fill=False))    
+                                      angle=np.arctan2(v1[1], v1[0]) * 180 / np.pi, fill=False, color='b', linewidth=1.5))    
+  
+  lower, upper = ellipse_bounds(centre, v1, v2, scales * gaussian_scale)
+  # draw box
+  plt.gca().add_patch(plt.Rectangle(lower, upper[0] - lower[0], upper[1] - lower[1], fill=False, color='g', linewidth=1.5))
+
   
 
   # ensure plot has equal aspect ratio
