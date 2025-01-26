@@ -117,7 +117,9 @@ def cov_grid(grid, cov, centre):
 
 
 
-def draw_grid(opacity, centre, scales, v1, gaussian_scale=2.0):
+def draw_grid(opacity, centre, scales, v1, alpha_threshold=1/255, alpha=1.0):
+
+  gaussian_scale = np.sqrt(2 * np.log(alpha / alpha_threshold))
 
   # set bounds of plot to (10, 10)
   plt.xlim(0, opacity.shape[0])
@@ -127,10 +129,10 @@ def draw_grid(opacity, centre, scales, v1, gaussian_scale=2.0):
   # draw grid cells
   for i, j in np.ndindex(opacity.shape[:2]):
      # fill with color gradient based on opacity
-    p1 = opacity[i, j]
-
-    plt.gca().add_patch(plt.Rectangle((i, j), 1, 1, fill=True, color=(1, 0, 0, p1)))  
-    plt.gca().add_patch(plt.Rectangle((i, j), 1, 1, fill=False, color='k'))
+    p1 = opacity[i, j] * alpha
+    if p1 > alpha_threshold:
+      plt.gca().add_patch(plt.Rectangle((i, j), 1, 1, fill=True, color=(1, 0, 0, p1)))  
+      plt.gca().add_patch(plt.Rectangle((i, j), 1, 1, fill=False, color='k'))
 
       # plt.gca().add_patch(plt.Rectangle((i, j), 1, 1, fill=False))
 

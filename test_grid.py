@@ -41,36 +41,50 @@ def intersect_circle(scale: float, rows: np.ndarray, centre: np.ndarray):
     return np.concatenate([p1, p2], axis=0)
 
 
-def intersect_rows(v1, scales, rows: np.ndarray, centre: np.ndarray):
-    v2 = np.array([-v1[1], v1[0]])  # perpendicular
-    points = []
+def make_line(normal, point):
+    """Create a line equation from a normal vector and point.
+    Returns coefficients [a,b,c] for line equation ax + by + c = 0"""
+    line = np.append(normal, -np.dot(normal, point))
 
-    basis = np.linalg.inv(np.array([v1 * scales[0], v2 * scales[1]]))
-    world_normal = np.array([0, 1]) 
-    
-    local_normal = np.linalg.norm(np.linalg.inv(basis).T @ world_normal)
-    print(local_normal)
+    return line
 
-    point = np.array([1, 1])
-    local_point = basis @ point
+def perp(v):
+  return np.array([-v[1], v[0]])
 
-    # print(point, local_point)
+def seg_to_line(start, end):
+  d = end - start
+  d /= np.linalg.norm(d)
+  return make_line(perp(d), start)
 
-    print(point.dot(world_normal), local_point.dot(local_normal))
+# def ellipse_lines(centre, dir, scales, rows):
+#     import numpy as np
 
+#     # Normalize direction vector
+#     dir = dir / np.linalg.norm(dir)
+#     ux, uy = dir
+#     ux2, uy2 = ux**2, uy**2
+#     a_inv_sq = 1 / scales[0]**2
+#     b_inv_sq = 1 / scales[1]**2
 
-    # Calculate the offset of the centre
-    # centre_offset = world_normal @ centre
+#     # Ellipse quadratic form coefficients
+#     M11 = ux2 * a_inv_sq + uy2 * b_inv_sq
+#     M12 = ux * uy * (a_inv_sq - b_inv_sq)
+#     M22 = uy2 * a_inv_sq + ux2 * b_inv_sq
+#     inv_2A = 1 / (2 * M11)
 
-    for row in rows:
-       
-        
-        row_offset = basis @ np.array([0, row - centre[1]])
-        print(row_offset @ local_normal)
-    #     print(row, np.linalg.norm(row_offset))
-        
-      
-    return np.array(points)
+#     points = []
+#     for y in rows:
+#         dy = y - centre[1]
+#         B = 2 * M12 * dy
+#         C = M22 * dy**2 - 1
+#         D = B**2 - 4 * M11 * C
+#         if D >= 0:
+#             sqrt_D = np.sqrt(D)
+#             x1 = (-B + sqrt_D) * inv_2A + centre[0]
+#             x2 = (-B - sqrt_D) * inv_2A + centre[0]
+#             points.extend([[x1, y], [x2, y]])
+#     return np.array(points)
+
 
 
 def ellipse_aabb(centre:np.ndarray, dir:np.ndarray, scales:np.ndarray):
@@ -81,16 +95,17 @@ def ellipse_aabb(centre:np.ndarray, dir:np.ndarray, scales:np.ndarray):
   return centre - extent, centre + extent
 
 
+def rand_vec2():
+  v = np.random.randn(2)
+  return v / np.linalg.norm(v)
+
 while True:
   grid_size = 5
-  centre = np.random.rand(2) * grid_size + 2
-  dir = np.random.randn(2)
-  dir = dir / np.linalg.norm(dir)
-  dir = np.array([1, 0])
+  centre = np.array([5, 5])
+  dir = rand_vec2()
 
-  # scales = np.random.rand(2) * 2 + 2
-  scales = np.array([1, 4])
-
+  scales = np.random.rand(2) * 2 + 0.2
+  
   grid = np.zeros((grid_size + 8, grid_size + 8), dtype=bool)
   # obb = create_obb(centre, dir, scales)
   v1 = dir * scales[0]
@@ -116,16 +131,14 @@ while True:
   plt.xlim(0, grid.shape[0])
   plt.ylim(0, grid.shape[1])
 
-  # plot oriented box
-  # plt.gca().add_patch(plt.Polygon(corners, closed=True, fill=False))
-  rows = np.arange(grid.shape[1]) * tile_size
-  print(rows)
-  intersections = intersect_rows(v1, scales, rows, centre)
-  # intersections = intersect_circle(scales[1], rows, centre)
-  print(intersections)
-  
-  # plot as points
+
+
+  # rows = np.arange(grid.shape[1]) * tile_size
+  # # print(rows)
+  # intersections = ellipse_lines(centre, dir, scales, rows)
+  # # # plot as points
   # plt.scatter(intersections[:, 0], intersections[:, 1], c='b', marker='.')
+
 
   # show bounds
   bounds_min, bounds_max = ellipse_aabb(centre, dir, scales)
