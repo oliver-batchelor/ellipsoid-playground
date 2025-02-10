@@ -18,14 +18,14 @@ def plot_half_cosine(x, k):
     return half_cos
 
 def plot_gauss(x, k, threshold=0.01):
-    return threshold ** (np.abs(x) ** (2 * k))
+    return threshold ** (np.abs(x) ** (2 * k)) - 1
 
 def plot_beta(x, k):
     return (1 - x**2) ** (4/k)
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kernel", type=str, default="raised_cosine", help="Kernel type cosine | half_cosine | beta")
+    parser.add_argument("--kernel", type=str, default="cosine", help="Kernel type cosine | half_cosine | beta")
     args = parser.parse_args()
 
     plt.figure(figsize=(8, 5))
@@ -39,7 +39,7 @@ def main():
 
 
     # Domain: -2 to 2
-    x = np.linspace(-1, 1, 500)
+    x = np.linspace(-1, 1, 2000)
     func = options[args.kernel]
     name = args.kernel
 
