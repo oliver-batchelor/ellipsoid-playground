@@ -17,8 +17,8 @@ def plot_half_cosine(x, k):
     )
     return half_cos
 
-def plot_gauss(x, k):
-    return 0.01 ** (np.abs(x) ** (2 * k))
+def plot_gauss(x, k, threshold=0.01):
+    return threshold ** (np.abs(x) ** (2 * k))
 
 def plot_beta(x, k):
     return (1 - x**2) ** (4/k)

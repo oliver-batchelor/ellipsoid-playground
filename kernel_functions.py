@@ -27,9 +27,10 @@ def main():
     epan = np.clip(1 - (np.abs(x) / 2) ** args.k, 0, 1)
 
     # Scale for Gaussian so that it is ~0.01 at x=±2
-    # => gauss(±2)=0.01 => exp(-((2^k)^2 / alpha^2))=0.01 => alpha=2^k/sqrt(-ln(0.01))
-    alpha = 2 ** args.k / np.sqrt(-np.log(0.01))
-    gauss = np.exp(-((np.abs(x) ** (2 * args.k)) / alpha ** 2))
+    threshold = 0.01
+    gauss = threshold ** (np.abs(x) ** (2 * args.k))
+
+
 
     plt.figure(figsize=(8, 5))
     plt.plot(x, raised_cos, label="Raised Cosine f(x)=cos(x^k)")
