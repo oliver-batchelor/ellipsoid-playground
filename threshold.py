@@ -31,8 +31,8 @@ args = args.parse_args()
 
 # Generate values for t from 0 to 1
 t_values = np.linspace(0, 1, 500)
-x = soft_threshold(t_values, args.threshold, args.margin)
-grad = soft_threshold_gradient(t_values, args.threshold, args.margin)
+# x = soft_threshold(t_values, args.threshold, args.margin)
+# grad = soft_threshold_gradient(t_values, args.threshold, args.margin)
 
 s = saturate(t_values, args.gain, args.k)
 s_grad = saturate_gradient(t_values, args.gain, args.k)
@@ -40,11 +40,11 @@ s_grad = saturate_gradient(t_values, args.gain, args.k)
 
 # Plot the graph
 plt.figure(figsize=(8, 5))
-plt.plot(t_values, x, label=r'x', color="blue")
-plt.plot(t_values, grad, label=r'grad', color="red")
+# plt.plot(t_values, x, label=r'x', color="blue")
+# plt.plot(t_values, grad, label=r'grad', color="red")
 
 plt.plot(t_values, s, label=r's', color="green")
-# plt.plot(t_values, s_grad, label=r's_grad', color="yellow")
+plt.plot(t_values, s_grad, label=r's_grad', color="yellow")
 
 plt.title("Graph of Transformed Sigmoid Function", fontsize=14)
 plt.xlabel("t", fontsize=12)
